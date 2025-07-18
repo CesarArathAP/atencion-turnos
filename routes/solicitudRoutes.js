@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const controlador = require('../controllers/solicitudController');
+const solicitudController = require('../controllers/solicitudController');
 
-router.get('/turnos', controlador.obtenerTurnos);
+router.get('/', solicitudController.mostrarIndex);
+router.post('/solicitudes', solicitudController.agregarSolicitud);
+router.get('/solicitudes/optimizar', solicitudController.optimizarAtencion);
+router.delete('/solicitudes', solicitudController.limpiarSolicitudes);
 
 module.exports = router;

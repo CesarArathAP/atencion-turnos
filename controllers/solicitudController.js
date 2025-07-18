@@ -1,18 +1,47 @@
-const Solicitud = require('../models/Solicitud');
+const solicitudModel = require('../models/solicitudModel');
 
-exports.obtenerTurnos = (req, res) => {
-  Solicitud.obtenerTodas((err, rows) => {
-    if (err) return res.status(500).json({ error: 'Error al obtener solicitudes' });
+exports.mostrarIndex = async (req, res) => {
+    try {
+        const solicitudes = await solicitudModel.obtenerSolicitudes();
+        const optimizacion = await solicitudModel.optimizarAtencion();
+        
+        res.render('index', {
+            messages: {
+                success: req.query.success,
+                error: req.query.error
+            },
+            solicitudes,
+            ...optimizacion
+        });
+    } catch (error) {
+        res.redirect(`/?error=${encodeURIComponent(error.message)}`);
+    }
+};
 
-    let espera = 0;
-    let inconformidad = 0;
-    const resultado = rows.map(s => {
-      const datos = { nombre: s.nombre, tiempo: s.tiempo, espera };
-      inconformidad += espera;
-      espera += s.tiempo;
-      return datos;
-    });
+exports.agregarSolicitud = async (req, res) => {
+    try {
+        const { numero, nombre, tiempo } = req.body;
+        await solicitudModel.agregarSolicitud(numero, nombre, tiempo);
+        res.redirect('/?success=Solicitud agregada correctamente');
+    } catch (error) {
+        res.redirect(`/?error=${encodeURIComponent(error.message)}`);
+    }
+};
 
-    res.json({ orden: resultado, inconformidad_total: inconformidad });
-  });
+exports.optimizarAtencion = async (req, res) => {
+    try {
+        await solicitudModel.optimizarAtencion();
+        res.redirect('/?success=Órden optimizado correctamente');
+    } catch (error) {
+        res.redirect(`/?error=${encodeURIComponent(error.message)}`);
+    }
+};
+
+exports.limpiarSolicitudes = async (req, res) => {
+    try {
+        await solicitudModel.limpiarSolicitudes();
+        res.redirect('/?success=Solicitudes limpiadas correctamente');
+    } catch (error) {
+        res.redirect(`/?error=${encodeURIComponent(error.message)}`);
+    }
 };

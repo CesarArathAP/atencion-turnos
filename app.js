@@ -1,39 +1,33 @@
 const express = require('express');
+const path = require('path');
+const methodOverride = require('method-override');
 const app = express();
-const agregarRoute = require('./routes/agregar');
-const solicitudRoutes = require('./routes/solicitudRoutes');
-const Solicitud = require('./models/Solicitud');
 
+// Inicializar base de datos
+require('./db/initDB');
+
+// Configuración de EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set('view engine', 'ejs');
-app.set('views', __dirname + '/views');
+app.use(methodOverride('_method'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Vista principal con turnos e inconformidad
-app.get('/', (req, res) => {
-  Solicitud.obtenerTodas((err, rows) => {
-    if (err) return res.status(500).send('Error al cargar turnos');
+// Rutas
+app.use('/', require('./routes/solicitudRoutes'));
 
-    let espera = 0;
-    let inconformidad = 0;
-    const ordenados = rows.map(s => {
-      const data = { nombre: s.nombre, tiempo: s.tiempo, espera };
-      inconformidad += espera;
-      espera += s.tiempo;
-      return data;
-    });
-
-    res.render('index', {
-      turnos: ordenados,
-      inconformidad_total: inconformidad
-    });
-  });
+// Manejador de errores
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).render('error', { error: err.message });
 });
-
-app.use('/api', solicitudRoutes);
-app.use('/agregar', agregarRoute); // Formulario
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor en http://localhost:${PORT}`);
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+module.exports = app;

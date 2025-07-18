@@ -1,58 +1,96 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Turnos Ciudadanos</title>
-  <style>
-    body { font-family: Arial; padding: 20px; background: #f5f5f5; }
-    h1, h2 { color: #333; }
-    form { margin-bottom: 30px; background: #fff; padding: 20px; border-radius: 8px; }
-    label, input { display: block; margin-bottom: 10px; }
-    input { padding: 10px; width: 100%; }
-    button { padding: 10px 16px; background: #2e86de; color: white; border: none; cursor: pointer; }
-    table { width: 100%; border-collapse: collapse; background: white; margin-top: 20px; }
-    th, td { padding: 12px; border: 1px solid #ccc; }
-    .total { margin-top: 20px; font-weight: bold; background: #ffeeba; padding: 10px; border-left: 4px solid #ffc107; }
-  </style>
-</head>
-<body>
+<%- include('partials/header') %>
 
-  <h1>Agencia de Atención a Ciudadanos</h1>
+    <% if (messages.success) { %>
+        <div class="alert success"><%= messages.success %></div>
+    <% } %>
+    <% if (messages.error) { %>
+        <div class="alert error"><%= messages.error %></div>
+    <% } %>
 
-  <h2>Registrar nueva solicitud</h2>
-  <form method="POST" action="/agregar">
-    <label>Nombre completo:</label>
-    <input type="text" name="nombre" required>
+    <section class="form-section">
+        <h2>Agregar Nueva Solicitud</h2>
+        <form action="/solicitudes" method="POST">
+            <div class="form-group">
+                <label for="numero">Número:</label>
+                <input type="number" id="numero" name="numero" required>
+            </div>
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="tiempo">Tiempo (min):</label>
+                <input type="number" id="tiempo" name="tiempo" min="1" max="120" required>
+            </div>
+            <button type="submit" class="btn">Agregar</button>
+        </form>
+    </section>
 
-    <label>Tiempo estimado (1 a 120 minutos):</label>
-    <input type="number" name="tiempo" min="1" max="120" required>
+    <section class="actions-section">
+        <h2>Acciones</h2>
+        <div class="action-buttons">
+            <a href="/solicitudes/optimizar" class="btn">Optimizar Atención</a>
+            <form action="/solicitudes" method="POST">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn danger">Limpiar Solicitudes</button>
+            </form>
+        </div>
+    </section>
 
-    <button type="submit">Agregar turno</button>
-  </form>
+    <% if (solicitudes && solicitudes.length) { %>
+        <section class="solicitudes-section">
+            <h2>Solicitudes Registradas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Nombre</th>
+                        <th>Tiempo (min)</th>
+                        <th>Fecha Creación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% solicitudes.forEach(solicitud => { %>
+                        <tr>
+                            <td><%= solicitud.numero %></td>
+                            <td><%= solicitud.nombre %></td>
+                            <td><%= solicitud.tiempo %></td>
+                            <td><%= new Date(solicitud.fecha_creacion).toLocaleString() %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </section>
+    <% } %>
 
-  <h2>Orden de Atención</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Tiempo Estimado</th>
-        <th>Tiempo de Espera</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% turnos.forEach(turno => { %>
-        <tr>
-          <td><%= turno.nombre %></td>
-          <td><%= turno.tiempo %> min</td>
-          <td><%= turno.espera %> min</td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
+    <% if (ordenOptimo && ordenOptimo.length) { %>
+        <section class="optimizacion-section">
+            <h2>Orden Óptimo de Atención</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Orden</th>
+                        <th>Número</th>
+                        <th>Nombre</th>
+                        <th>Tiempo (min)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% ordenOptimo.forEach((solicitud, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td><%= solicitud.numero %></td>
+                            <td><%= solicitud.nombre %></td>
+                            <td><%= solicitud.tiempo %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            <div class="metrics">
+                <p><strong>Inconformidad total:</strong> <%= inconformidad %></p>
+                <p><strong>Tiempo total de atención:</strong> <%= tiempoTotal %> minutos</p>
+            </div>
+        </section>
+    <% } %>
 
-  <div class="total">
-    Nivel total de inconformidad: <%= inconformidad_total %> minutos
-  </div>
-
-</body>
-</html>
+<%- include('partials/footer') %> 
