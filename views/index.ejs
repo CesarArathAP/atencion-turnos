@@ -46,7 +46,7 @@
                         <th>Número</th>
                         <th>Nombre</th>
                         <th>Tiempo (min)</th>
-                        <th>Fecha Creación</th>
+                        <th>Fecha y Hora de Registro</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,7 +55,7 @@
                             <td><%= solicitud.numero %></td>
                             <td><%= solicitud.nombre %></td>
                             <td><%= solicitud.tiempo %></td>
-                            <td><%= new Date(solicitud.fecha_creacion).toLocaleString() %></td>
+                            <td><%= solicitud.fecha_creacion %></td>
                         </tr>
                     <% }); %>
                 </tbody>
@@ -93,4 +93,4 @@
         </section>
     <% } %>
 
-<%- include('partials/footer') %> 
+<%- include('partials/footer') %>
